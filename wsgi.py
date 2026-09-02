@@ -2,7 +2,10 @@ import os
 import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+os.environ['PYTHONPATH'] = BASE_DIR
 
 from backend.app import create_app
 
