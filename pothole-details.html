@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pothole Inspection Details - Smart Road AI System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: var(--bg-card);
+      padding: 1.25rem 2rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      z-index: 2;
+    }
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .step.completed .step-circle {
+      background: var(--accent-blue);
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+    .step-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .explain-box {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .explain-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--status-critical);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="topbar-container"></div>
+
+      <main class="content-body">
+
+        <!-- Pothole Lifecycle State Timeline -->
+        <div class="timeline" id="lifecycle-timeline">
+          <div class="step" id="step-DETECTED"><div class="step-circle">1</div><span class="step-label">DETECTED</span></div>
+          <div class="step" id="step-VERIFIED"><div class="step-circle">2</div><span class="step-label">VERIFIED</span></div>
+          <div class="step" id="step-REPORTED"><div class="step-circle">3</div><span class="step-label">REPORTED</span></div>
+          <div class="step" id="step-ASSIGNED"><div class="step-circle">4</div><span class="step-label">ASSIGNED</span></div>
+          <div class="step" id="step-UNDER_REPAIR"><div class="step-circle">5</div><span class="step-label">UNDER REPAIR</span></div>
+          <div class="step" id="step-CLOSED"><div class="step-circle">6</div><span class="step-label">AI VERIFIED & CLOSED</span></div>
+        </div>
+
+        <div class="details-grid">
+          <!-- Left Column: Evidence Photo & Explainable AI -->
+          <div>
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div class="card-header">
+                <span class="card-title">AI Bounding Box Evidence Photo</span>
+              </div>
+              <div style="width:100%; min-height:260px; background:#000; border-radius:var(--radius-md); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                <img id="pothole-img" style="max-width:100%; max-height:380px; object-fit:contain;" alt="Detection Evidence">
+              </div>
+            </div>
+
+            <!-- Explainable AI Module -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">💡 Explainable AI Diagnostic Logic</span>
+              </div>
+              <div class="explain-box">
+                <div class="explain-title" id="explain-head">Why is this classified as HIGH risk?</div>
+                <div id="explain-reasons-list" style="font-size:0.85rem; line-height:1.6; margin-bottom:0.75rem;">Loading AI explanation...</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); border-top:1px solid rgba(255,255,255,0.1); padding-top:0.5rem;" id="explain-rec">
+                  <strong>Recommendation:</strong> Immediate inspection required
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Structured Metrics & Audit Trail -->
+          <div>
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div class="card-header">
+                <span class="card-title" id="detail-title">Pothole Telemetry Metrics</span>
+                <span id="detail-risk-badge"></span>
+              </div>
+
+              <div class="meta-row"><span>Pothole ID</span><strong id="meta-id" style="color:var(--accent-cyan);">--</strong></div>
+              <div class="meta-row"><span>Estimated Distance</span><strong id="meta-dist" style="color:var(--accent-cyan);">--</strong></div>
+              <div class="meta-row"><span>Road / Segment</span><strong id="meta-road">--</strong></div>
+              <div class="meta-row"><span>Detection Confidence</span><strong id="meta-conf">--</strong></div>
+              <div class="meta-row"><span>Estimated Dimensions</span><strong id="meta-dim">--</strong></div>
+              <div class="meta-row"><span>Surface Bounding Area</span><strong id="meta-area">--</strong></div>
+              <div class="meta-row"><span>Estimated Severity Score</span><strong id="meta-sev" style="color:var(--accent-cyan);">--</strong></div>
+              <div class="meta-row"><span>Repair Priority Score</span><strong id="meta-prio" style="color:var(--status-high);">--</strong></div>
+              <div class="meta-row"><span>Repeated Detection Events</span><strong id="meta-count">--</strong></div>
+              <div class="meta-row"><span>First Detected Timestamp</span><strong id="meta-first">--</strong></div>
+              <div class="meta-row"><span>Current Status</span><strong id="meta-status">--</strong></div>
+
+              <div style="margin-top:1.25rem; display:flex; gap:0.5rem;">
+                <button class="btn btn-primary" style="flex:1;" onclick="openAssignModal()">Assign Repair 🛠️</button>
+              </div>
+            </div>
+
+            <!-- Audit Trail Log -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">📜 Audit Trail & History</span>
+              </div>
+              <div id="audit-trail-container" style="font-size:0.82rem;">
+                Loading audit trail history...
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/details.js"></script>
+</body>
+</html>

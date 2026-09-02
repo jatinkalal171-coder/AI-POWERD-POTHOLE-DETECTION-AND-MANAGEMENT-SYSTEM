@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Detection Studio - Smart Road AI System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .detect-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .drop-zone {
+      border: 2px dashed var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background: rgba(31, 41, 55, 0.4);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      margin-bottom: 1.25rem;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: var(--accent-blue);
+    }
+    .drop-zone .icon {
+      font-size: 2.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .result-img-box {
+      width: 100%;
+      min-height: 250px;
+      background: #000;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+    }
+    .result-img-box img, .result-img-box video {
+      max-width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+    }
+    .tab-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .tab-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .tab-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+    .det-card-meta {
+      background: rgba(0,0,0,0.3);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.85rem;
+    }
+    .gps-btn {
+      width: 100%;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition-fast);
+      margin-bottom: 0.75rem;
+    }
+    .gps-btn:hover {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+    #detect-map {
+      width: 100%;
+      height: 180px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .gps-status {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="topbar-container"></div>
+
+      <main class="content-body">
+
+        <!-- Mode Toggle Tabs -->
+        <div class="tab-btn-group">
+          <button class="tab-btn active" id="tab-img-btn" onclick="switchTab('image')">📷 Single Image Analysis</button>
+          <button class="tab-btn" id="tab-vid-btn" onclick="switchTab('video')">📹 Video File Inspection</button>
+        </div>
+
+        <div class="detect-grid">
+          <!-- Upload Controls Form -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title" id="form-title">Upload Image for AI Inspection</span>
+            </div>
+
+            <!-- Image Upload Form -->
+            <form id="image-upload-form">
+              <div class="drop-zone" id="img-drop-zone" onclick="document.getElementById('img-file-input').click()">
+                <div class="icon">📁</div>
+                <p style="font-weight:600; margin-bottom:0.25rem;">Drag & drop image here or click to browse</p>
+                <p style="font-size:0.78rem; color:var(--text-muted);">Supports JPG, PNG, WEBP</p>
+                <input type="file" id="img-file-input" accept="image/*" style="display:none;" onchange="previewSelectedFile(this, 'img-preview-tag')">
+              </div>
+
+              <div id="img-preview-container" style="display:none; margin-bottom:1rem; text-align:center;">
+                <img id="img-preview-tag" style="max-height:180px; border-radius:var(--radius-md); border:1px solid var(--border-accent);">
+              </div>
+
+              <div class="form-group" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Road / Location Name</label>
+                <input type="text" id="road_name" class="form-control" placeholder="e.g., Ashram Road, Sector 5" required>
+              </div>
+
+              <div class="form-group" style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Road Importance</label>
+                <select id="road_importance" class="form-control">
+                  <option value="CRITICAL">CRITICAL (Major Highway)</option>
+                  <option value="HIGH">HIGH (Main Arterial)</option>
+                  <option value="MEDIUM" selected>MEDIUM (Collector Road)</option>
+                  <option value="LOW">LOW (Residential Street)</option>
+                </select>
+              </div>
+
+              <!-- Location GPS Section -->
+              <div class="form-group" style="margin-bottom:1.25rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">GPS Coordinates</label>
+                
+                <button type="button" class="gps-btn" id="detect-gps-btn" onclick="fetchDetectGPSLocation()">
+                  📍 USE MY CURRENT LOCATION
+                </button>
+
+                <div id="detect-gps-status" class="gps-status" style="display:none;"></div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;">
+                  <input type="number" step="any" id="lat" class="form-control" placeholder="Latitude" required>
+                  <input type="number" step="any" id="lng" class="form-control" placeholder="Longitude" required>
+                </div>
+
+                <div id="detect-map"></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="run-btn">
+                Run YOLO Pothole AI 🚀
+              </button>
+            </form>
+
+            <!-- Video Upload Form (hidden by default) -->
+            <form id="video-upload-form" style="display:none;">
+              <div class="drop-zone" onclick="document.getElementById('vid-file-input').click()">
+                <div class="icon">🎥</div>
+                <p style="font-weight:600; margin-bottom:0.25rem;">Upload inspection video for object tracking</p>
+                <p style="font-size:0.78rem; color:var(--text-muted);">Supports MP4, AVI, MOV</p>
+                <input type="file" id="vid-file-input" accept="video/*" style="display:none;" onchange="previewSelectedVideoFile(this)">
+              </div>
+
+              <div id="vid-preview-container" style="display:none; margin-bottom:1rem; text-align:center;">
+                <video id="vid-preview-tag" controls style="max-height:180px; width:100%; border-radius:var(--radius-md); border:1px solid var(--border-accent);"></video>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="vid-run-btn">
+                Process Video Stream 🎥
+              </button>
+            </form>
+          </div>
+
+          <!-- Detection Result Panel -->
+          <div class="card">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="card-title">AI Inspection Evidence & Analysis</span>
+              <button type="button" class="btn btn-sm" style="background:rgba(59,130,246,0.15); color:var(--accent-blue); border:1px solid var(--accent-blue); padding:0.35rem 0.75rem; border-radius:var(--radius-md); font-weight:600; cursor:pointer;" onclick="openCalibrationModal()">
+                📷 Camera Calibration
+              </button>
+            </div>
+
+            <div class="result-img-box" id="result-media-box">
+              <span style="color:var(--text-muted); font-size:0.9rem;">Annotated AI result will render here</span>
+            </div>
+
+            <!-- DISTANCE FROM CAMERA CARD -->
+            <div style="margin-top:1rem; padding:1rem; background:rgba(17,24,39,0.7); border:1px solid var(--border-accent); border-radius:var(--radius-md);">
+              <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em; margin-bottom:0.3rem;">
+                DISTANCE FROM CAMERA
+              </div>
+              <div id="primary-estimated-distance" style="font-size:2rem; font-weight:800; color:var(--accent-cyan);">--</div>
+              <div id="primary-distance-reliability" style="font-size:0.8rem; color:var(--text-muted);">Calibrated Monocular Estimation</div>
+            </div>
+
+            <div id="detection-details-panel" style="display:none;">
+              <div class="det-card-meta" id="det-card-meta-content"></div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Camera Calibration Modal -->
+  <div id="calibration-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:1000; align-items:center; justify-content:center;">
+    <div class="card" style="width:90%; max-width:500px; background:var(--bg-card); border:1px solid var(--border-accent); border-radius:var(--radius-lg);">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="card-title">📷 Camera Calibration Settings</span>
+        <button onclick="closeCalibrationModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">✖</button>
+      </div>
+
+      <form id="modal-calibration-form" onsubmit="saveModalCalibration(event)">
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label style="font-size:0.8rem;">Camera Height (meters)</label>
+          <input type="number" step="0.05" id="calib-height" class="form-control" placeholder="1.50" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label style="font-size:0.8rem;">Known Reference Object Width (meters)</label>
+          <input type="number" step="0.01" id="calib-ref-width" class="form-control" placeholder="0.50" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label style="font-size:0.8rem;">Reference Distance (meters)</label>
+          <input type="number" step="0.1" id="calib-ref-dist" class="form-control" placeholder="2.00" required>
+        </div>
+        <div class="form-group" style="margin-bottom:0.75rem;">
+          <label style="font-size:0.8rem;">Camera Pitch Angle (degrees)</label>
+          <input type="number" step="1" id="calib-pitch" class="form-control" placeholder="15">
+        </div>
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label style="font-size:0.8rem;">Camera Vertical FOV (degrees)</label>
+          <input type="number" step="1" id="calib-fovy" class="form-control" placeholder="55">
+        </div>
+
+        <div style="display:flex; gap:0.5rem;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">Save Calibration 💾</button>
+          <button type="button" class="btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="closeCalibrationModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/detect.js"></script>
+</body>
+</html>

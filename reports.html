@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Reports - Smart Road AI System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .reports-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      transition: var(--transition-fast);
+    }
+    .report-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+    .report-card .icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="topbar-container"></div>
+
+      <main class="content-body">
+
+        <div class="reports-grid">
+          <!-- PDF Report Export -->
+          <div class="report-card">
+            <div class="icon">📕</div>
+            <h2 style="font-size:1.25rem; margin-bottom:0.5rem;">Official PDF Municipal Inspection Report</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">
+              Generates a branded multi-page ReportLab PDF inspection document containing executive summary metrics, road health score, automated recommendations, and detailed pothole telemetry tables.
+            </p>
+            <a href="/api/reports/pdf" class="btn btn-primary" style="padding:0.8rem 1.75rem; display:inline-flex;">
+              Download PDF Inspection Report 📥
+            </a>
+          </div>
+
+          <!-- CSV Report Export -->
+          <div class="report-card">
+            <div class="icon">📊</div>
+            <h2 style="font-size:1.25rem; margin-bottom:0.5rem;">Structured CSV Data Export</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">
+              Exports raw structured CSV data containing Pothole ID, Date, Time, Confidence, Width, Height, Area, Severity Score, Priority Score, Risk Level, GPS Coordinates, and Status.
+            </p>
+            <a href="/api/reports/csv" class="btn btn-secondary" style="padding:0.8rem 1.75rem; display:inline-flex; border-color:var(--accent-blue);">
+              Download CSV Telemetry Export 📥
+            </a>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => requireAuth());
+  </script>
+</body>
+</html>

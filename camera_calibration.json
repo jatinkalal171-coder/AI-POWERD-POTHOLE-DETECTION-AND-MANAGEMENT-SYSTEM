@@ -1,0 +1,10 @@
+{
+  "is_calibrated": true,
+  "camera_height": 1.5,
+  "camera_pitch": 15.0,
+  "camera_fovy": 55.0,
+  "known_ref_width": 0.5,
+  "known_ref_dist": 2.0,
+  "focal_length_px": 480.0,
+  "calibrated_at": "2026-08-16 20:45:10"
+}

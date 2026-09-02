@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pothole Directory - Smart Road AI System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      background: var(--bg-card);
+      padding: 1.25rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+    }
+    .filter-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="topbar-container"></div>
+
+      <main class="content-body">
+
+        <!-- Search & Filter Controls -->
+        <div class="filter-bar">
+          <div class="filter-inputs">
+            <input type="text" id="search-input" class="form-control" placeholder="Search by Pothole ID or Road..." style="width:240px;">
+
+            <select id="filter-risk" class="form-control" style="width:140px;">
+              <option value="">All Risk Levels</option>
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="LOW">LOW</option>
+            </select>
+
+            <select id="filter-status" class="form-control" style="width:140px;">
+              <option value="">All Statuses</option>
+              <option value="OPEN">OPEN</option>
+              <option value="ASSIGNED">ASSIGNED</option>
+              <option value="UNDER_REPAIR">UNDER REPAIR</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+
+            <select id="sort-by" class="form-control" style="width:160px;">
+              <option value="priority">Sort by Priority</option>
+              <option value="severity">Sort by Severity</option>
+              <option value="newest">Sort by Newest</option>
+              <option value="oldest">Sort by Oldest</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="loadPotholesList()">Search & Filter 🔍</button>
+        </div>
+
+        <!-- Master Pothole Directory Table -->
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pothole ID</th>
+                  <th>Location / Road Name</th>
+                  <th>Confidence</th>
+                  <th>Est. Severity</th>
+                  <th>Repair Priority</th>
+                  <th>Risk Level</th>
+                  <th>Detections</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="potholes-table-body">
+                <tr><td colspan="9" style="text-align:center; padding:2rem;">Loading potholes database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/potholes.js"></script>
+</body>
+</html>

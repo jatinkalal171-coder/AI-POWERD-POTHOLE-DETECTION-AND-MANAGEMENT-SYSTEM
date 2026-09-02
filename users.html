@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management - Smart Road AI System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="topbar-container"></div>
+
+      <main class="content-body">
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Registered System Users & Roles</span>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Full Name</th>
+                  <th>Email Address</th>
+                  <th>System Role</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="5" style="text-align:center; padding:2rem;">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      requireAuth();
+      loadUsersList();
+    });
+
+    async function loadUsersList() {
+      try {
+        const data = await apiFetch('/api/users');
+        if (!data) return;
+
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = (data.users || []).map(u => `
+          <tr>
+            <td><strong>#${u.id}</strong></td>
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td><span class="badge ${u.role === 'Admin' ? 'badge-critical' : u.role === 'Municipality Officer' ? 'badge-high' : u.role === 'Field Officer' ? 'badge-medium' : 'badge-low'}">${u.role}</span></td>
+            <td>${formatDate(u.created_at)}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading users list:', err);
+      }
+    }
+  </script>
+</body>
+</html>
